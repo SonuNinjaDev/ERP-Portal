@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Balaji ERP PRO</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+body{
+margin:0;
+font-family:'Inter';
+background:radial-gradient(circle at top,#2a0000,#000000);
+color:#fff;
+}
+
+/* CENTER STRIP */
+.container{
+max-width:1100px;
+margin:20px auto;
+padding:10px;
+}
+
+/* NAV */
+nav{
+background:rgba(255,0,0,0.08);
+backdrop-filter:blur(15px);
+padding:12px 20px;
+display:flex;
+justify-content:space-between;
+align-items:center;
+border-bottom:1px solid rgba(255,0,0,0.3);
+box-shadow:0 0 20px rgba(255,0,0,0.3);
+}
+
+.logo{
+display:flex;
+align-items:center;
+gap:10px;
+}
+
+.logo h2{
+color:#ff2e2e;
+text-shadow:0 0 10px red;
+}
+
+/* NAV BUTTON */
+nav button{
+background:transparent;
+border:1px solid red;
+color:#fff;
+padding:6px 12px;
+border-radius:20px;
+cursor:pointer;
+transition:0.3s;
+}
+
+nav button:hover{
+background:red;
+box-shadow:0 0 15px red;
+}
+
+/* CARD (GLASS + GLOW) */
+.card{
+background:rgba(255,255,255,0.05);
+backdrop-filter:blur(20px);
+padding:12px;
+border-radius:15px;
+margin:12px 0;
+border:1px solid rgba(255,0,0,0.2);
+box-shadow:0 0 20px rgba(255,0,0,0.2);
+transition:0.4s;
+}
+
+.card:hover{
+transform:translateY(-5px);
+box-shadow:0 0 30px red;
+}
+
+/* INLINE FORM */
+#entry .card:first-child{
+display:flex;
+flex-wrap:wrap;
+align-items:center;
+gap:10px;
+}
+
+/* INPUT */
+input,select{
+flex:1;
+min-width:120px;
+padding:8px;
+border-radius:8px;
+border:none;
+background:rgba(255,0,0,0.2);
+color:#fff;
+outline:none;
+transition:0.3s;
+}
+
+input:focus{
+box-shadow:0 0 10px red;
+}
+
+/* BUTTON */
+button.action,
+#entry button{
+padding:8px 15px;
+background:#ff2e2e;
+border:none;
+border-radius:10px;
+cursor:pointer;
+color:#fff;
+transition:0.3s;
+}
+
+button.action:hover,
+#entry button:hover{
+box-shadow:0 0 15px red;
+transform:scale(1.05);
+}
+
+/* TABLE */
+table{
+width:100%;
+border-collapse:collapse;
+}
+
+th{
+color:#ff2e2e;
+padding:10px;
+text-shadow:0 0 8px red;
+}
+
+td{
+padding:10px;
+text-align:center;
+border-bottom:1px solid rgba(255,255,255,0.1);
+}
+
+/* DELETE BTN */
+td button{
+background:red;
+color:white;
+border:none;
+padding:5px 8px;
+border-radius:8px;
+cursor:pointer;
+}
+
+td button:hover{
+box-shadow:0 0 10px red;
+}
+
+.hidden{display:none}
+</style>
+</head>
+
+<body>
+
+<nav>
+<div class="logo">
+<img src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" width="30">
+<h2>Balaji ERP</h2>
+</div>
+
+<div>
+<button onclick="showPage('dashboard')">Dashboard</button>
+<button onclick="showPage('employee')">Employees</button>
+<button onclick="showPage('entry')">Entries</button>
+<button onclick="showPage('tracker')">Business</button>
+</div>
+</nav>
+
+<div class="container">
+
+<div id="dashboard">
+<div class="card">
+<p>Total Meetings: <span id="tm">0</span></p>
+<p>Total Revenue: ₹<span id="ta">0</span></p>
+<p>Top Performer: <span id="top">-</span></p>
+<button class="action" onclick="clearDashboard()">Clear</button>
+</div>
+<canvas id="chart"></canvas>
+</div>
+
+<div id="employee" class="hidden">
+<div class="card">
+<input id="emp" placeholder="Employee Name">
+<button class="action" onclick="addEmp()">Add</button>
+<ul id="empList"></ul>
+</div>
+</div>
+
+<div id="entry" class="hidden">
+<div class="card">
+<input type="date" id="date">
+<select id="empSel"></select>
+<input id="meet" type="number" placeholder="Meetings">
+<input id="amt" type="number" placeholder="Amount">
+<button onclick="addEntry()">Save</button>
+</div>
+
+<div class="card">
+<table>
+<tr>
+<th>Name</th>
+<th>Meetings</th>
+<th>Amount</th>
+<th>Salary</th>
+<th>Delete</th>
+</tr>
+<tbody id="table"></tbody>
+</table>
+</div>
+</div>
+
+<div id="tracker" class="hidden">
+<div class="card">
+<input type="date" id="bdate">
+<input id="bcash" type="number" placeholder="Cash">
+<input id="bonline" type="number" placeholder="Online">
+<input id="bad" type="number" placeholder="Ad Cost">
+<input id="bexp" type="number" placeholder="Expense">
+<button class="action" onclick="addBiz()">Add</button>
+</div>
+
+<div class="card">
+<table>
+<tr>
+<th>Date</th>
+<th>Cash</th>
+<th>Online</th>
+<th>Ad</th>
+<th>Expense</th>
+<th>Profit</th>
+</tr>
+<tbody id="bizTable"></tbody>
+</table>
+
+<p>Total Profit: ₹<span id="bprofit">0</span></p>
+</div>
+</div>
+
+</div>
+
+<script>
+
+/* SAME LOGIC — untouched */
+
+const ENTRY_API = "https://sheetdb.io/api/v1/qzsto6cvz3lsb";
+const BIZ_API = "https://sheetdb.io/api/v1/7w6nz8u74idm2";
+
+let employees = JSON.parse(localStorage.getItem("emp")) || [];
+let data = JSON.parse(localStorage.getItem("data")) || [];
+let biz = JSON.parse(localStorage.getItem("biz")) || [];
+let chart;
+
+function save(){
+localStorage.setItem("emp", JSON.stringify(employees));
+localStorage.setItem("data", JSON.stringify(data));
+localStorage.setItem("biz", JSON.stringify(biz));
+}
+
+function showPage(id){
+['dashboard','employee','entry','tracker'].forEach(p=>document.getElementById(p).classList.add('hidden'));
+document.getElementById(id).classList.remove('hidden');
+}
+
+function addEmp(){
+if(!emp.value) return;
+employees.push(emp.value);
+emp.value="";
+save(); renderEmp();
+}
+
+function renderEmp(){
+empList.innerHTML="";
+empSel.innerHTML="";
+employees.forEach((e,i)=>{
+empList.innerHTML+=`<li>${e} <button onclick="delEmp(${i})">❌</button></li>`;
+empSel.innerHTML+=`<option>${e}</option>`;
+});
+}
+
+function delEmp(i){employees.splice(i,1); save(); renderEmp();}
+
+function addEntry(){
+let obj={date:date.value,name:empSel.value,meet:+meet.value,amt:+amt.value};
+data.push(obj);
+save(); renderData();
+
+fetch(ENTRY_API,{
+method:"POST",
+headers:{"Content-Type":"application/json"},
+body:JSON.stringify({
+data:[{
+date:obj.date,
+name:obj.name,
+meetings:obj.meet,
+amount:obj.amt
+}]
+})
+});
+}
+
+function renderData(){
+let html="";
+let tm=0, ta=0;
+let chartData={}, salaryMap={}, meetingMap={};
+
+data.forEach(d=>{
+tm+=d.meet;
+ta+=d.amt;
+chartData[d.name]=(chartData[d.name]||0)+d.meet;
+salaryMap[d.name]=(salaryMap[d.name]||0)+d.amt;
+meetingMap[d.name]=(meetingMap[d.name]||0)+d.meet;
+});
+
+Object.keys(salaryMap).forEach(name=>{
+html+=`<tr>
+<td>${name}</td>
+<td>${meetingMap[name]}</td>
+<td>₹${salaryMap[name]}</td>
+<td>₹${salaryMap[name]}</td>
+<td><button onclick="deleteEntry('${name}')">❌</button></td>
+</tr>`;
+});
+
+table.innerHTML=html;
+document.getElementById("tm").innerText=tm;
+document.getElementById("ta").innerText=ta;
+
+let topEmp=Object.keys(chartData).sort((a,b)=>chartData[b]-chartData[a])[0]||"-";
+document.getElementById("top").innerText=topEmp;
+
+renderChart(chartData);
+}
+
+function deleteEntry(name){
+if(!confirm("Delete all entries of " + name + "?")) return;
+data = data.filter(d => d.name !== name);
+save();
+renderData();
+}
+
+function renderChart(obj){
+let labels=Object.keys(obj);
+let values=Object.values(obj);
+if(chart) chart.destroy();
+chart=new Chart(document.getElementById("chart"),{
+type:'bar',
+data:{labels:labels,datasets:[{label:'Meetings',data:values}]}
+});
+}
+
+function addBiz(){
+let obj={
+date:new Date(bdate.value).toLocaleDateString(),
+cash:+bcash.value,
+online:+bonline.value,
+ad:+bad.value,
+exp:+bexp.value
+};
+
+obj.profit = (obj.cash + obj.online) - (obj.ad + obj.exp);
+
+biz.push(obj);
+save();
+renderBiz();
+
+fetch(BIZ_API,{
+method:"POST",
+headers:{"Content-Type":"application/json"},
+body:JSON.stringify({
+data:[{
+bdate:obj.date,
+cash:obj.cash,
+online:obj.online,
+ad:obj.ad,
+expense:obj.exp,
+profit:obj.profit
+}]
+})
+});
+}
+
+function renderBiz(){
+let total=0;
+let html="";
+
+biz.forEach(b=>{
+total+=b.profit;
+
+html+=`
+<tr>
+<td>${b.date}</td>
+<td>₹${b.cash}</td>
+<td>₹${b.online}</td>
+<td>₹${b.ad}</td>
+<td>₹${b.exp}</td>
+<td>₹${b.profit}</td>
+</tr>
+`;
+});
+
+document.getElementById("bizTable").innerHTML = html;
+document.getElementById("bprofit").innerText = total;
+}
+
+function clearDashboard(){
+if(confirm("Clear all data?")){
+data=[];
+biz=[];
+save();
+renderData();
+renderBiz();
+}
+}
+
+renderEmp();
+renderData();
+renderBiz();
+
+</script>
+
+</body>
+</html>
